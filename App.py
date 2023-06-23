@@ -25,15 +25,16 @@ async def main(sqsService, watchService) -> None:
             
             await sendData.sendMessageSucessfuly(sqsService, _municipioInfo)
             
-            await logService.logSucessfuly(watchService)
-
         except Exception as error:
             _error = error
             logging.error("Task error for ", error)
 
         finally :
-            await logService.logFailure(watchService,_error)
-            await sendData.sendMessageFailure(sqsService, municipio)
+            if _error != None:
+                await logService.logFailure(watchService,_error)
+                await sendData.sendMessageFailure(sqsService, municipio)
+            
+            await logService.logSucessfuly(watchService)
             logging.debug("task finished")
             continue
 
