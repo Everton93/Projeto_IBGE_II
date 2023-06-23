@@ -1,6 +1,5 @@
-import aiohttp
+from aiohttp import ClientSession,ClientResponseError
 import logging
-import re
 import unidecode
 
 headersGetPageCitiesData = {
@@ -19,22 +18,22 @@ async def obterPaginaMunicipio(sigla, municipio):
     try:
         logging.info('Getting page Cities from IBGE ...')
         
-        async with aiohttp.ClientSession() as session:
+        async with ClientSession() as session:
             async with session.get(
                 f'https://www.ibge.gov.br/cidades-e-estados/{str(sigla).lower()}/{spaces(municipio)}.html',
                     headers=headersGetPageCitiesData) as response:
                         if response.status != 200:
-                            logging.critical(response.text)
-                            return aiohttp.ClientResponseError(response.status, response.text)
-                        else:
+                            raise ClientResponseError(response.status, response.text)
+                        if str(response.text()).__contains__('PRESIDENTE'):
+                            raise Exception("this is not information correctly !!!")
+                        else:    
                            logging.info('Getting page Cities is Sucessfuly !!!') 
                            
                            return await response.text()
                              
 
     except Exception as error:
-        logging.error(error)
-        return error.args
+        raise Exception(error)
 
 def spaces(stringSpace):
     if str(stringSpace).__contains__(' '):        

@@ -1,38 +1,46 @@
 import Model.Municipio as municipio
 import Model.Estados as estados
-import json
 import jsonpickle
 import logging
+import os
 
 
-async def receiveData(_serviceSender):
+async def receiveData(sqsClient):
 
     try:
         logging.info('Start receive Data From Queue !!!')
 
-        _message = _serviceSender.get_messages(num_messages=1,
-                                               message_attributes='Body').__getitem__(0)._body
+        response = sqsClient.receive_message(QueueUrl= os.getenv('AWS_SQS_URL'), MaxNumberOfMessages=1, WaitTimeSeconds=10)
+        message = response['Messages'][0]
+        receiptHandle = message['ReceiptHandle']
+        body = message['Body']
+        data = jsonpickle.loads(body)        
 
-        if _message != None:
-            logging.info('Data Received is Sucessfuly !!!')                        
-            return desserializable(_message)                 
-        else:
-            return Exception('The queue don´t contains data !!!')
-      
+    except IndexError:
+        raise IndexError('The queue don´t contains data !!!')
+
     except Exception as error:
-        logging.error(error)
-        return error.args
+        raise Exception(error)
+    else:
+        sqsClient.delete_message(QueueUrl=os.getenv('AWS_SQS_URL'),ReceiptHandle=receiptHandle)
+        logging.info('Data Received is Sucessfuly !!!')
+        return desserializable(data)
 
 def desserializable(message):
-    municipioDictionary = jsonpickle.decode(message)
-
-    return municipio.Municipio(municipioDictionary["nomeMunicipio"], 
-                                     municipioDictionary["codigoMunicipio"], 
-                                        estados.Estados(municipioDictionary["estado"]["codigo_estado"],
-                                            municipioDictionary["estado"]["nome_uf"],
-                                             municipioDictionary["estado"]["sigla"]))
-
-     
+    return municipio.Municipio(message["nomeMunicipio"],
+                               message["codigoMunicipio"],
+                               estados.Estados(message["estado"]["codigo_estado"],
+                                               message["estado"]["nome_uf"],
+                                               message["estado"]["sigla"]))
 
 
+#response
 
+# message = response['Messages'][0]
+# receipt_handle = message['ReceiptHandle']
+
+# Delete received message from queue
+# sqs.delete_message(
+#    QueueUrl=queue_url,
+#    ReceiptHandle=receipt_handle
+# )

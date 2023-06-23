@@ -17,8 +17,7 @@ async def obterDadosMunicipio(_htmlPage, municipio):
         return await parseCity(_htmlListInfo, _htmlList, municipio)
         
     except Exception as error:
-        logging.error(error)
-        return error.args
+        Exception(error)        
 
 
 async def parseCity(htmlListI, htmlListII,_municipio):
