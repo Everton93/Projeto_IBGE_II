@@ -17,7 +17,7 @@ headersGetPageCitiesData = {
             }
 
 
-async def obterPaginaMunicipio(sigla, municipio):
+async def obterPaginaMunicipio(codigoMunicipio):
 
     try:
         
@@ -25,7 +25,7 @@ async def obterPaginaMunicipio(sigla, municipio):
         
         with (get_legacy_session() as session,
             session.get(
-                f'https://www.ibge.gov.br/cidades-e-estados/{str(sigla).lower()}/{spaces(municipio)}.html',
+                f'https://www.ibge.gov.br/cidades-e-estados?c={codigoMunicipio}',
                     headers=headersGetPageCitiesData) as response):
                         if str(response.text).__contains__('Presidente'):
                             raise Exception("this is not information correctly !!!")

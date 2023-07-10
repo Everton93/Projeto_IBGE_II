@@ -19,7 +19,7 @@ async def main(sqsService, watchService) -> None:
             
             municipio = await getData.receiveData(sqsService)
 
-            htmlPage = await searchData.obterPaginaMunicipio(municipio.estado.sigla, municipio.nomeMunicipio)
+            htmlPage = await searchData.obterPaginaMunicipio(municipio.codigoMunicipio)
             
             _municipioInfo = await parseMunicipios.obterDadosMunicipio(htmlPage, municipio)            
             
