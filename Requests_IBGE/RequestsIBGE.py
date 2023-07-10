@@ -1,6 +1,10 @@
-from aiohttp import ClientSession,ClientResponseError
 import logging
 import unidecode
+import requests
+import urllib3
+import ssl
+
+
 
 headersGetPageCitiesData = {
                 "Host": "www.ibge.gov.br",
@@ -16,20 +20,18 @@ headersGetPageCitiesData = {
 async def obterPaginaMunicipio(sigla, municipio):
 
     try:
+        
         logging.info('Getting page Cities from IBGE ...')
         
-        async with ClientSession() as session:
-            async with session.get(
+        with (get_legacy_session() as session,
+            session.get(
                 f'https://www.ibge.gov.br/cidades-e-estados/{str(sigla).lower()}/{spaces(municipio)}.html',
-                    headers=headersGetPageCitiesData) as response:
-                        if response.status != 200:
-                            raise ClientResponseError(response.status, response.text)
-                        if str(response.text()).__contains__('PRESIDENTE'):
+                    headers=headersGetPageCitiesData) as response):
+                        if str(response.text).__contains__('Presidente'):
                             raise Exception("this is not information correctly !!!")
                         else:    
-                           logging.info('Getting page Cities is Sucessfuly !!!') 
-                           
-                           return await response.text()
+                           logging.info('Getting page Cities is Sucessfuly !!!')                            
+                           return response.text
                              
 
     except Exception as error:
@@ -40,3 +42,24 @@ def spaces(stringSpace):
         return unidecode.unidecode(str(stringSpace).replace(' ', '-').lower())
     else:
         return stringSpace   
+    
+
+class CustomHttpAdapter (requests.adapters.HTTPAdapter):
+    # "Transport adapter" that allows us to use custom ssl_context.
+
+    def __init__(self, ssl_context=None, **kwargs):
+        self.ssl_context = ssl_context
+        super().__init__(**kwargs)
+
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = urllib3.poolmanager.PoolManager(
+            num_pools=connections, maxsize=maxsize,
+            block=block, ssl_context=self.ssl_context)
+
+
+def get_legacy_session():
+    ctx = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+    ctx.options |= 0x4  # OP_LEGACY_SERVER_CONNECT
+    session = requests.session()
+    session.mount('https://', CustomHttpAdapter(ctx))
+    return session

@@ -1,6 +1,5 @@
 import logging
 import jsonpickle
-import time
 import os
 
 async def sendMessageSucessfuly(senderService, city) -> None:
@@ -9,14 +8,16 @@ async def sendMessageSucessfuly(senderService, city) -> None:
         jsonpickle.set_preferred_backend('json')
         jsonpickle.set_encoder_options('json', ensure_ascii=False)
 
-        logging.debug('sending message ...')
+        logging.info('sending message ...')
         
         cityJsonMessage = jsonpickle.dumps(city, unpicklable=False)
+        
+        logging.info(cityJsonMessage)
 
         response = senderService.send_message(QueueUrl=os.getenv('AWS_SQS_URL2'), DelaySeconds=10,
                                                 MessageBody=cityJsonMessage, MessageAttributes={})
-        
-        logging.debug('send message is sucessfuly !!!')
+                
+        logging.info('send message is sucessfuly !!!')
                 
     except Exception as error:
         raise Exception(error)

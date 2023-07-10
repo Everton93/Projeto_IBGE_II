@@ -4,16 +4,23 @@ import asyncio
 from bs4 import BeautifulSoup as bs
 from Model import MunicipioInfo as _municipioInfo
 from datetime import datetime
+from parsel import Selector
+
 
 async def obterDadosMunicipio(_htmlPage, municipio):
     try:
         logging.info('Start Parse Cities Data !!!')
-        htmlPage = str(_htmlPage).replace('\xa0', '')
-        _html =  bs(str(htmlPage).encode('utf-8'),'lxml').find('ul',{'class':'resultados-padrao'})
-        _htmlList = _html.find_all('li')        
-        htmlInfo = bs(str(htmlPage).encode('utf-8'),'lxml').find('ul',{'class':'resultados-destaque'})
-        _htmlListInfo = htmlInfo.find_all('li')
         
+        htmlPage = str(_htmlPage).replace('\xa0', '')
+
+        _html =  bs(str(htmlPage).encode('utf-8'),'html').find('ul',{'class':'resultados-padrao'})
+        
+        _htmlList = _html.find_all('li')        
+
+        htmlInfo = bs(str(htmlPage).encode('utf-8'),'lxml').find('ul',{'class':'resultados-destaque'})      
+        
+        _htmlListInfo = htmlInfo.find_all('li')     
+                                
         return await parseCity(_htmlListInfo, _htmlList, municipio)
         
     except Exception as error:

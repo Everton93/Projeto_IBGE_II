@@ -21,7 +21,7 @@ async def main(sqsService, watchService) -> None:
 
             htmlPage = await searchData.obterPaginaMunicipio(municipio.estado.sigla, municipio.nomeMunicipio)
             
-            _municipioInfo = await parseMunicipios.obterDadosMunicipio(htmlPage, municipio)
+            _municipioInfo = await parseMunicipios.obterDadosMunicipio(htmlPage, municipio)            
             
             await sendData.sendMessageSucessfuly(sqsService, _municipioInfo)
             
@@ -37,12 +37,12 @@ async def main(sqsService, watchService) -> None:
                 await sendData.sendMessageFailure(sqsService, municipio)
             
             
-            logging.debug("task finished")
+            logging.info("task finished")
             continue
 
 if __name__ == "__main__":
 
-    logging.debug("initialize configuration")
+    logging.info("initialize configuration")
 
     load_dotenv()
     logging.basicConfig(level=logging.DEBUG, format='%(name)s - %(levelname)s - %(message)s')

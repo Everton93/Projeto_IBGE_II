@@ -5,6 +5,7 @@ import logging
 import os
 
 
+
 async def receiveData(sqsClient):
 
     try:
@@ -16,9 +17,9 @@ async def receiveData(sqsClient):
         body = message['Body']
         data = jsonpickle.loads(body)        
 
-    except IndexError:
-        raise IndexError('The queue don´t contains data !!!')
-
+    except KeyError as error:
+            raise Exception('The queue don´t contains data !!!')
+        
     except Exception as error:
         raise Exception(error)
     else:
