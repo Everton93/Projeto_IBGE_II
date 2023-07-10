@@ -1,10 +1,8 @@
-
 import logging
 import asyncio
 from bs4 import BeautifulSoup as bs
 from Model import MunicipioInfo as _municipioInfo
 from datetime import datetime
-from parsel import Selector
 
 
 async def obterDadosMunicipio(_htmlPage, municipio):
